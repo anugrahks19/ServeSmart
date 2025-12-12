@@ -186,7 +186,27 @@ st.sidebar.markdown("<br>", unsafe_allow_html=True)
 conf_thresh = st.sidebar.slider("SENSITIVITY", 0.1, 1.0, 0.25, 0.05)
 model_path = st.sidebar.text_input("NEURAL CORE", r"model.pt")
 
-# Real Telemetry
+# Load Model
+@st.cache_resource
+def load_model(path):
+    return YOLO(path)
+
+try:
+    if os.path.exists(model_path):
+        model = load_model(model_path)
+        st.sidebar.markdown("""
+        <div style="padding:10px; border-radius:10px; background:rgba(0,201,255,0.1); color:#00C9FF; text-align:center; margin-top:20px; border: 1px solid #00C9FF;">
+            ● NEURAL CORE ACTIVE
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.sidebar.error("⚠️ CORE OFFLINE")
+        model = None
+except Exception as e:
+    st.sidebar.error(f"SYSTEM FAILURE: {e}")
+    model = None
+
+# Real Telemetry (Moved AFTER model loading)
 import time
 import torch
 
@@ -209,26 +229,6 @@ st.sidebar.markdown(f"""
     STATUS: OPERATIONAL
 </div>
 """, unsafe_allow_html=True)
-
-# Load Model
-@st.cache_resource
-def load_model(path):
-    return YOLO(path)
-
-try:
-    if os.path.exists(model_path):
-        model = load_model(model_path)
-        st.sidebar.markdown("""
-        <div style="padding:10px; border-radius:10px; background:rgba(0,201,255,0.1); color:#00C9FF; text-align:center; margin-top:20px; border: 1px solid #00C9FF;">
-            ● NEURAL CORE ACTIVE
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.sidebar.error("⚠️ CORE OFFLINE")
-        model = None
-except Exception as e:
-    st.sidebar.error(f"SYSTEM FAILURE: {e}")
-    model = None
 
 # Main Interface
 col1, col2 = st.columns([1, 1], gap="large")
